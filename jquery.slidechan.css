@@ -1,0 +1,90 @@
+@charset 'utf-8';
+
+.slideChan-loading {
+	width: 100%;
+	height: 100%;
+	background: #fff url(img/loading.gif) no-repeat center center;
+	text-indent: 100%;
+	text-align: left;
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+}
+
+.slideChan-view {
+	width: 100%;
+	position: relative;
+}
+
+.slideChan-OuterContainer {
+	overflow: hidden;
+}
+
+.slideChan-container {
+	overflow: hidden;
+}
+
+.slideChan-navi {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top:0;
+}
+
+.slideChan-naviPrev,
+.slideChan-naviNext {
+	width: 50%;
+	height: 100%;
+	cursor: pointer;
+}
+
+.slideChan-naviPrev {
+	float: left;
+	background: url(img/prev.png) left 50% no-repeat;
+}
+
+.slideChan-naviNext {
+	float: right;
+	background: url(img/next.png) right 50% no-repeat;
+}
+
+.slideChan-naviButtonContainer.outer {
+	margin-top: 10px;	
+}
+
+.slideChan-naviButtonContainer.inner {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+}
+
+ul.slideChan-naviButton {
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+ul.slideChan-naviButton li {
+	width: 15px;
+	height: 15px;
+	float: left;
+	margin-left: 8px;
+	background-image: url(img/nav-btn.png);
+	background-repeat: no-repeat;
+	background-position: left top;
+	text-align: left;
+	text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+ul.slideChan-naviButton li:first-child {
+	margin-left: 0;
+	
+}
+
+ul.slideChan-naviButton li:hover,
+ul.slideChan-naviButton li.button-active {
+	background-position: left bottom;
+}
