@@ -1,7 +1,7 @@
 /*////////////////////////////////////////////////////////////////////
 SlideChan - jQuery plugin (ver.1.11.1)
 http://www.jquery.com
-Version: 1.0
+Version: 1.1
 
 Copyright 2014 atomicbox http://atomicbox.tank.jp/
 Licensed under the Creative Commons Attribution 2.1 License
@@ -12,6 +12,8 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 	/* パラメータ定義：デフォルト値 */
 	var defaults = {
 			slideSpeed: 500,
+			autoLoop: true,
+			loopTime: 8000,
 			contentsSlideShowMode: false,
 			frameSelector: '.slideChan-frame',
 			naviPrevSelector: '',
@@ -31,7 +33,8 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 		var entity = {};	// 内部設定セット
 		self.setupCompleteFlg = false;
 		self.preloadCompleteFlg = false;
-		self.loadTimerID;
+		self.loadTimerID = false;
+		self.loopTimerID = false;
 
 		/* function ::: 初期化コントロール */
 		var initCtrl = function(){
@@ -42,7 +45,7 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 			// ローディング開始
 			self.css('position','relative');
 			entity.settings.loading = self.append('<div class="slideChan-loading">Loading</div>').find('.slideChan-loading');
-			self.loadTimerID = setInterval(loadingCtrl, 500);
+			self.loadTimerID = setTimeout(loadingCtrl, 500);
 			
 			// 画像のプリロード処理
 			entity.loadImgLen = self.find('img').length;	// ローディング対象画像数
@@ -96,7 +99,7 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 				entity.settings.frames.find('img').css('width','100%');				
 			}
 			frameAdjustCtrl();
-			slideButtonCtrl(0);
+			slideCtrl(0);	
 			
 			// イベントセットアップ
 			entity.settings.naviPrev.on('click', function() {
@@ -110,7 +113,17 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 			if(entity.settings.naviButtonUse){
 			entity.settings.naviButton.find('li').on('click', function(){
 				var index = parseInt($(this).text());
-				slideCtrl(index);
+				if(entity.settings.autoLoop){
+					if (self.loopTimerID !== false) {
+						clearInterval(self.loopTimerID);
+				    }
+					slideCtrl(index);
+					self.loopTimerID = setInterval(function(){
+						goToNextSlide();
+					}, entity.settings.loopTime);
+				} else {
+					slideCtrl(index);
+				}
 			});
 			}
 
@@ -122,7 +135,7 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 			        clearTimeout(timer);
 			    }
 			    timer = setTimeout(function() {
-					self.loadTimerID = setInterval(loadingCtrl, 500);
+					self.loadTimerID = setTimeout(loadingCtrl, 500);
 				    resizeCtrl();
 			    }, 200);
 			});
@@ -130,18 +143,34 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 			
 			// セットアップ完了
 			self.setupCompleteFlg = true;
-		}		
-		
-		
-		
+		}
 		
 
 		/* function ::: ローディングコントロール */
 		var loadingCtrl = function() {
 			if(self.preloadCompleteFlg && self.setupCompleteFlg) {
-				clearTimeout(self.loadTimerID);
-				entity.settings.loading.delay(300).fadeOut('slow');
-			}			
+				// ローディングタイマー停止
+				if (self.loadTimerID !== false) {
+					clearTimeout(self.loadTimerID);
+			    }
+				slideCtrl(0);
+				// Auto Loop
+				if(entity.settings.autoLoop){
+					if (self.loopTimerID !== false) {
+						clearInterval(self.loopTimerID);
+				    }
+					entity.settings.loading.delay(entity.settings.slideSpeed).fadeOut('slow',function(){
+						self.loopTimerID = setInterval(function(){
+							goToNextSlide();
+						}, entity.settings.loopTime);
+					});
+				} else {
+					entity.settings.loading.delay(entity.settings.slideSpeed).fadeOut('slow');
+				}
+			} else {
+				// ローディングタイマー延長
+				self.loadTimerID = setTimeout(loadingCtrl, 500);
+			}		
 		}
 
 		/* function ::: プリロードコントロール */
@@ -174,9 +203,6 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 				entity.settings.navi.width(entity.settings.frameW);
 			}
 
-//			entity.settings.frameH = entity.settings.frames.find(':first').height();
-//			entity.settings.container.height(entity.settings.frameH);
-//			entity.settings.navi.height(entity.settings.frameH);
 			if(entity.settings.naviButtonUse && entity.settings.defaultNaviButtonUse){
 				var naviButtonW = 0;
 				entity.settings.naviButton.find('li').each(function(){
@@ -219,7 +245,7 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 		/* function ::: リサイズコントロール */
 		var resizeCtrl = function() {
 			frameAdjustCtrl();
-			slideCtrl(0);
+			//slideCtrl(0);				
 			self.setupCompleteFlg = true;
 		}
 
@@ -228,6 +254,14 @@ http://creativecommons.org/licenses/by-nc-nd/2.1/jp/
 			var dist = entity.settings.container.css('marginLeft').replace('px', '');
 			return Math.abs(Math.floor(dist / entity.settings.frameW));
 		};
+		
+		/* function ::: 次のスライドに切り替える */
+		var goToNextSlide = function(prev) {
+			prev = prev || false;
+			var index = getDispSlideId();
+			index = (prev) ? index - 1 : index + 1;
+			slideCtrl(index);
+		}
 
 		/* function ::: スライドindexのValidation */
 		var validSlideIndex = function(index) {
